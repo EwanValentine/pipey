@@ -2,6 +2,7 @@ package piper
 
 import "sync"
 
+// MergeIn takes a slice of channels and returns a channel of the combined input values.
 func MergeIn[T any](streams ...<-chan T) chan T {
 	out := make(chan T)
 	var wg sync.WaitGroup
@@ -26,6 +27,7 @@ func MergeIn[T any](streams ...<-chan T) chan T {
 	return out
 }
 
+// FanOut takes a channel and replicates the input values into multiple channels.
 func FanOut[T any](in chan T, outs ...chan T) {
 	go func() {
 		for {
@@ -37,6 +39,7 @@ func FanOut[T any](in chan T, outs ...chan T) {
 	}()
 }
 
+// Pipeline takes series of stages and returns a channel that's the output of the last stage.
 func Pipeline[T any](input <-chan T, processor func(T) T) <-chan T {
 	output := make(chan T)
 	go func() {
@@ -48,6 +51,7 @@ func Pipeline[T any](input <-chan T, processor func(T) T) <-chan T {
 	return output
 }
 
+// Filter takes a channel and returns a channel of values that pass the given condition.
 func Filter[T any](input <-chan T, condition func(T) bool) <-chan T {
 	output := make(chan T)
 	go func() {
@@ -61,6 +65,7 @@ func Filter[T any](input <-chan T, condition func(T) bool) <-chan T {
 	return output
 }
 
+// Map takes a channel and returns a channel of values that have been transformed by the given function.
 func Map[T any, U any](input <-chan T, transform func(T) U) <-chan U {
 	output := make(chan U)
 	go func() {
@@ -112,13 +117,8 @@ type Result[T any] struct {
 	Err   error
 }
 
-// Catch is a pipeline stage that allows you to handle errors in a pipeline.
-// It takes a channel of values and a function that takes a value and returns
-// a value and an error. It returns a channel of Result[T] where Result[T] is
-// a struct containing a value and an error. If the function returns an error,
-// the error will be sent to the Result[T].Err field. If the function returns
-// a value, the value will be sent to the Result[T].Value field.
-// Diagram:
+// Catch takes a channel and returns a channel of values that have been transformed by the given function,
+// along with any errors that occurred.
 func Catch[T any](input <-chan T, processor func(T) (T, error)) <-chan Result[T] {
 	output := make(chan Result[T])
 	go func() {
