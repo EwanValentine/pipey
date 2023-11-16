@@ -30,7 +30,7 @@ func MergeIn[T any](streams ...<-chan T) chan T {
 }
 
 // FanOut takes a channel and replicates the input values into multiple channels.
-func FanOut[T any](in chan T, outs ...chan T) {
+func FanOut[T any](in <-chan T, outs ...chan T) {
 	go func() {
 		for {
 			v := <-in
