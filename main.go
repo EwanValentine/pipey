@@ -1,4 +1,4 @@
-package piper
+package pipey
 
 import "sync"
 
