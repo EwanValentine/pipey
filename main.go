@@ -2,6 +2,8 @@ package pipey
 
 import "sync"
 
+type Stages[T any] []func(T) T
+
 // MergeIn takes a slice of channels and returns a channel of the combined input values.
 func MergeIn[T any](streams ...<-chan T) chan T {
 	out := make(chan T)
