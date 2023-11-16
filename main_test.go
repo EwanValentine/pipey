@@ -60,16 +60,19 @@ func TestPipeline(t *testing.T) {
 		close(input2)
 	}()
 
-	stage := Pipeline(MergeIn(input1, input2), double)
+	stage := Pipeline(
+		MergeIn(input1, input2),
+		[]func(int) int{double, double},
+	)
 
 	out1 := <-stage
-	if out1 != 2 {
-		t.Errorf("Expected 2, got %d", out1)
+	if out1 != 4 {
+		t.Errorf("Expected 4, got %d", out1)
 	}
 
 	out2 := <-stage
-	if out2 != 4 {
-		t.Errorf("Expected 4, got %d", out2)
+	if out2 != 8 {
+		t.Errorf("Expected 8, got %d", out2)
 	}
 }
 

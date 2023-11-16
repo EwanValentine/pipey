@@ -40,7 +40,15 @@ func FanOut[T any](in chan T, outs ...chan T) {
 }
 
 // Pipeline takes series of stages and returns a channel that's the output of the last stage.
-func Pipeline[T any](input <-chan T, processor func(T) T) <-chan T {
+func Pipeline[T any](input <-chan T, processors []func(T) T) <-chan T {
+	current := input
+	for _, processor := range processors {
+		current = process(current, processor)
+	}
+	return current
+}
+
+func process[T any](input <-chan T, processor func(T) T) <-chan T {
 	output := make(chan T)
 	go func() {
 		defer close(output)
