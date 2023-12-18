@@ -79,6 +79,8 @@ func TestPipeline(t *testing.T) {
 	if out2 != 8 {
 		t.Errorf("Expected 8, got %d", out2)
 	}
+
+	close(stage)
 }
 
 func TestFilter(t *testing.T) {
