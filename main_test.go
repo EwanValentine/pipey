@@ -16,7 +16,7 @@ func TestMergeIn(t *testing.T) {
 		a <- 3
 	}()
 
-	output := MergeIn(a, b, c)
+	output := FanIn(a, b, c)
 
 	for i := 1; i <= 3; i++ {
 		if <-output != i {
@@ -34,17 +34,22 @@ func TestFanOut(t *testing.T) {
 	out1 := make(chan int)
 	out2 := make(chan int)
 
-	FanOut(in, out1, out2)
+	done := FanOut(in, out1, out2)
 
-	for i := 1; i <= 3; i++ {
-		in <- i
-		if <-out1 != i {
-			t.Errorf("Expected %d, got %d", i, <-out1)
+	go func() {
+		for i := 1; i <= 3; i++ {
+			in <- i
+			if <-out1 != i {
+				t.Errorf("Expected %d, got %d", i, <-out1)
+			}
+			if <-out2 != i {
+				t.Errorf("Expected %d, got %d", i, <-out2)
+			}
 		}
-		if <-out2 != i {
-			t.Errorf("Expected %d, got %d", i, <-out2)
-		}
-	}
+		close(in)
+	}()
+
+	<-done
 }
 
 func TestPipeline(t *testing.T) {
@@ -61,7 +66,7 @@ func TestPipeline(t *testing.T) {
 	}()
 
 	stage := Pipeline(
-		MergeIn(input1, input2),
+		FanIn(input1, input2),
 		[]func(int) int{double, double},
 	)
 

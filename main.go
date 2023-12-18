@@ -4,8 +4,8 @@ import "sync"
 
 type Stages[T any] []func(T) T
 
-// MergeIn takes a slice of channels and returns a channel of the combined input values.
-func MergeIn[T any](streams ...<-chan T) chan T {
+// FanIn takes a slice of channels and returns a channel of the combined input values.
+func FanIn[T any](streams ...<-chan T) chan T {
 	out := make(chan T)
 	var wg sync.WaitGroup
 
@@ -30,8 +30,9 @@ func MergeIn[T any](streams ...<-chan T) chan T {
 }
 
 // FanOut takes a channel and replicates the input values into multiple channels.
-func FanOut[T any](in <-chan T, outs ...chan T) {
+func FanOut[T any](in <-chan T, outs ...chan T) <-chan struct{} {
 	distChans := make([]chan T, len(outs))
+	done := make(chan struct{})
 	for i := range outs {
 		distChans[i] = make(chan T)
 		go func(out chan T, distChan chan T) {
@@ -51,7 +52,10 @@ func FanOut[T any](in <-chan T, outs ...chan T) {
 		for _, distChan := range distChans {
 			close(distChan)
 		}
+
+		done <- struct{}{}
 	}()
+	return done
 }
 
 // Pipeline takes series of stages and returns a channel that's the output of the last stage.
@@ -100,7 +104,7 @@ func Map[T any, U any](input <-chan T, transform func(T) U) <-chan U {
 	return output
 }
 
-// FanOutFanIn
+// FanOutFanIn -
 func FanOutFanIn[T any](input <-chan T, worker func(T) T, numWorkers int) <-chan T {
 	output := make(chan T)
 	for i := 0; i < numWorkers; i++ {
