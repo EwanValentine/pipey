@@ -4,12 +4,12 @@ A generic Pipeline framework for data processing in the Go programming language.
 
 ## Examples
 
-### Merge In
+### Fan In
 
-Merge in takes multiple input channels and combines the values to a single output channel.
+Fan in takes multiple input channels and combines the values to a single output channel.
 
 ```golang
-output := MergeIn(channelA, channelB, channelC)
+output := FanIn(channelA, channelB, channelC)
 ```
 
 ### Fan Out
@@ -22,7 +22,8 @@ inA := make(chan int)
 outputA := make(chan int)
 outputB := make(chan int)
 
-FanOut(inA, outputA, outputB)
+done := FanOut(inA, outputA, outputB)
+<-done
 ```
 
 ### Filter
